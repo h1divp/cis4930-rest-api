@@ -307,7 +307,7 @@ paths:
        - name: movieId
          in: query
          required: false
-         description: Filter showtimes by movie
+         description: Filter times by movie
          schema:
            type: string
      responses:
@@ -331,7 +331,7 @@ paths:
                      type: string
                      format: date-time
        "404":
-         description: Movie or showtime not found
+         description: Movie or time not found
 
  /buy:
    post:
@@ -345,7 +345,7 @@ paths:
              required:
                - userId
                - movieId
-               - showtimeId
+               - timeId
                - seat
                - paymentToken
              properties:
@@ -353,7 +353,7 @@ paths:
                  type: string
                movieId:
                  type: string
-               showtimeId:
+               timeId:
                  type: string
                seat:
                  type: string
@@ -372,7 +372,7 @@ paths:
        "402":
          description: Payment was declined
        "404":
-         description: Movie, showtime, or seat not found
+         description: Movie, time, or seat not found
 
  /login:
    post:
@@ -483,7 +483,7 @@ components:
          type: string
        times:
          type: array
-         description: IDs of the movie's showtimes
+         description: IDs of the movie's times
          items:
            type: string
        description:
@@ -502,7 +502,7 @@ components:
          type: string
        movieId:
          type: string
-       showtimeId:
+       timeId:
          type: string
        price:
          type: number
