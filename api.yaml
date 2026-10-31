@@ -1,0 +1,523 @@
+openapi: 3.1.0
+info:
+ title: Movie Ticket API
+ version: 1.0.0
+ description: API for browsing movies and purchasing movie tickets.
+
+servers:
+ - url: https://api.cis4930.com
+
+paths:
+ /users:
+   get:
+     summary: List users
+     responses:
+       "200":
+         description: Users retrieved
+         content:
+           application/json:
+             schema:
+               type: array
+               items:
+                 $ref: "#/components/schemas/User"
+       "500":
+         description: Server error
+   post:
+     summary: Create a user
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             type: object
+             required:
+               - username
+               - email
+               - password
+             properties:
+               username:
+                 type: string
+               email:
+                 type: string
+                 format: email
+               password:
+                 type: string
+                 format: password
+                 writeOnly: true
+               dateOfBirth:
+                 type: string
+                 format: date
+     responses:
+       "201":
+         description: User created
+         content:
+           application/json:
+             schema:
+               $ref: "#/components/schemas/User"
+       "400":
+         description: Invalid user data
+       "409":
+         description: User already exists
+
+ /users/{id}:
+   parameters:
+     - name: id
+       in: path
+       required: true
+       description: User identifier
+       schema:
+         type: string
+   put:
+     summary: Update a user
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             type: object
+             required:
+               - username
+               - email
+             properties:
+               username:
+                 type: string
+               email:
+                 type: string
+                 format: email
+               password:
+                 type: string
+                 format: password
+                 writeOnly: true
+               favoriteMovies:
+                 type: array
+                 items:
+                   type: string
+               dateOfBirth:
+                 type: string
+                 format: date
+     responses:
+       "200":
+         description: User updated
+         content:
+           application/json:
+             schema:
+               $ref: "#/components/schemas/User"
+       "400":
+         description: Invalid user data
+       "404":
+         description: User not found
+   delete:
+     summary: Delete a user
+     responses:
+       "204":
+         description: User deleted
+       "404":
+         description: User not found
+       "409":
+         description: User cannot be deleted
+
+ /users/{id}/email:
+   put:
+     summary: Update a user's email address
+     parameters:
+       - name: id
+         in: path
+         required: true
+         description: User identifier
+         schema:
+           type: string
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             type: object
+             required:
+               - email
+               - currentPassword
+             properties:
+               email:
+                 type: string
+                 format: email
+               currentPassword:
+                 type: string
+                 format: password
+                 writeOnly: true
+     responses:
+       "200":
+         description: Email address updated
+       "400":
+         description: Invalid email or password
+       "404":
+         description: User not found
+
+ /movies:
+   get:
+     summary: List movies
+     parameters:
+       - name: limit
+         in: query
+         required: false
+         description: Maximum number of movies to return
+         schema:
+           type: integer
+           minimum: 1
+           maximum: 30
+     responses:
+       "200":
+         description: Movies retrieved
+         content:
+           application/json:
+             schema:
+               type: array
+               items:
+                 $ref: "#/components/schemas/Movie"
+       "500":
+         description: Server error
+   post:
+     summary: Create a movie
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             type: object
+             required:
+               - name
+             properties:
+               name:
+                 type: string
+               times:
+                 type: array
+                 items:
+                   type: string
+               description:
+                 type: string
+               posterImage:
+                 type: string
+                 format: uri
+               watchedCount:
+                 type: integer
+                 minimum: 0
+     responses:
+       "201":
+         description: Movie created
+         content:
+           application/json:
+             schema:
+               $ref: "#/components/schemas/Movie"
+       "400":
+         description: Invalid movie data
+
+ /movies/{id}:
+   parameters:
+     - name: id
+       in: path
+       required: true
+       description: Movie identifier
+       schema:
+         type: string
+   get:
+     summary: Get a movie by ID
+     responses:
+       "200":
+         description: Movie retrieved
+         content:
+           application/json:
+             schema:
+               $ref: "#/components/schemas/Movie"
+       "404":
+         description: Movie not found
+   put:
+     summary: Update a movie
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             type: object
+             required:
+               - name
+             properties:
+               name:
+                 type: string
+               times:
+                 type: array
+                 items:
+                   type: string
+               description:
+                 type: string
+               posterImage:
+                 type: string
+                 format: uri
+               watchedCount:
+                 type: integer
+                 minimum: 0
+     responses:
+       "200":
+         description: Movie updated
+         content:
+           application/json:
+             schema:
+               $ref: "#/components/schemas/Movie"
+       "400":
+         description: Invalid movie data
+       "404":
+         description: Movie not found
+   delete:
+     summary: Delete a movie
+     responses:
+       "204":
+         description: Movie deleted
+       "404":
+         description: Movie not found
+       "409":
+         description: Movie cannot be deleted
+
+ /tickets:
+   get:
+     summary: Find tickets by movie and seat
+     parameters:
+       - name: movieId
+         in: query
+         required: true
+         schema:
+           type: string
+       - name: seat
+         in: query
+         required: true
+         schema:
+           type: string
+     responses:
+       "200":
+         description: Matching tickets retrieved
+         content:
+           application/json:
+             schema:
+               type: array
+               items:
+                 $ref: "#/components/schemas/Ticket"
+       "404":
+         description: No matching tickets found
+
+ /times:
+   get:
+     summary: List movie times
+     parameters:
+       - name: movieId
+         in: query
+         required: false
+         description: Filter showtimes by movie
+         schema:
+           type: string
+     responses:
+       "200":
+         description: Times retrieved
+         content:
+           application/json:
+             schema:
+               type: array
+               items:
+                 type: object
+                 properties:
+                   id:
+                     type: string
+                   movieId:
+                     type: string
+                   startTime:
+                     type: string
+                     format: date-time
+                   endTime:
+                     type: string
+                     format: date-time
+       "404":
+         description: Movie or showtime not found
+
+ /buy:
+   post:
+     summary: Purchase a ticket
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             type: object
+             required:
+               - userId
+               - movieId
+               - showtimeId
+               - seat
+               - paymentToken
+             properties:
+               userId:
+                 type: string
+               movieId:
+                 type: string
+               showtimeId:
+                 type: string
+               seat:
+                 type: string
+               paymentToken:
+                 type: string
+                 description: Token from a payment provider; do not send raw card details.
+     responses:
+       "201":
+         description: Ticket purchased
+         content:
+           application/json:
+             schema:
+               $ref: "#/components/schemas/Purchase"
+       "400":
+         description: Invalid purchase request
+       "402":
+         description: Payment was declined
+       "404":
+         description: Movie, showtime, or seat not found
+
+ /login:
+   post:
+     summary: Log in a user
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             type: object
+             required:
+               - email
+               - password
+             properties:
+               email:
+                 type: string
+                 format: email
+               password:
+                 type: string
+                 format: password
+                 writeOnly: true
+     responses:
+       "200":
+         description: Login successful
+         content:
+           application/json:
+             schema:
+               type: object
+               properties:
+                 accessToken:
+                   type: string
+                 tokenType:
+                   type: string
+                   example: Bearer
+       "400":
+         description: Invalid request
+       "401":
+         description: Invalid email or password
+
+ /signup:
+   post:
+     summary: Register a user
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             type: object
+             required:
+               - username
+               - email
+               - password
+             properties:
+               username:
+                 type: string
+               email:
+                 type: string
+                 format: email
+               password:
+                 type: string
+                 format: password
+                 writeOnly: true
+               dateOfBirth:
+                 type: string
+                 format: date
+     responses:
+       "201":
+         description: User registered
+         content:
+           application/json:
+             schema:
+               $ref: "#/components/schemas/User"
+       "400":
+         description: Invalid registration data
+       "409":
+         description: User already exists
+
+components:
+ schemas:
+   User:
+     type: object
+     properties:
+       id:
+         type: string
+       username:
+         type: string
+       email:
+         type: string
+         format: email
+       favoriteMovies:
+         type: array
+         items:
+           type: string
+       tickets:
+         type: array
+         items:
+           type: string
+       dateOfBirth:
+         type: string
+         format: date
+
+   Movie:
+     type: object
+     properties:
+       id:
+         type: string
+       name:
+         type: string
+       times:
+         type: array
+         description: IDs of the movie's showtimes
+         items:
+           type: string
+       description:
+         type: string
+       posterImage:
+         type: string
+         format: uri
+       watchedCount:
+         type: integer
+         minimum: 0
+
+   Ticket:
+     type: object
+     properties:
+       id:
+         type: string
+       movieId:
+         type: string
+       showtimeId:
+         type: string
+       price:
+         type: number
+         format: float
+       seat:
+         type: string
+
+   Purchase:
+     type: object
+     properties:
+       bookingId:
+         type: string
+       ticketId:
+         type: string
+       paymentStatus:
+         type: string
+         enum:
+           - paid
